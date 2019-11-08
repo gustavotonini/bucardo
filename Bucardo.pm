@@ -7011,6 +7011,24 @@ sub validate_sync {
                 $g->{stagetable} = "stage_$g->{makername}";
             }
 
+			#Another sync has already loaded information about this table, so there is no point in querying the remote sites again
+			for (sort keys %{ $self->{sync} }) {
+				my $sss = $self->{sync}{$_};
+				for my $ggg (@{$sss->{goatlist}}) {
+					if ($g->{safeschema} eq $ggg->{safeschema} and $g->{safetable} eq $g->{safetable} and ($ggg->{cols})){
+						$g->{cols}=$ggg->{cols};
+						$g->{columnhash}=$ggg->{columnhash};
+						$g->{safecols}=$ggg->{safecols};
+						$g->{columnlist}=$ggg->{columnlist};
+						$g->{safecolumnlist}=$ggg->{safecolumnlist};
+						$g->{binarypkey}=$ggg->{binarypkey};
+						$g->{hasbinarypk}=$ggg->{hasbinarypk};
+						$g->{binarycols}=$ggg->{binarycols};
+						next GOAT;
+					}
+				}
+			}
+			
             ## Turn off the search path, to help the checks below match up
             $srcdbh->do('SET LOCAL search_path = pg_catalog');
 
